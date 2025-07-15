@@ -3,21 +3,11 @@
 <head>
     <title>Lịch sử cược</title>
     <link rel="stylesheet" href="/style.css">
-    <style>
-        table td, table th {
-            vertical-align: middle;
-            text-align: center;
-            padding: 12px 8px;
-        }
-        .result-win { color: green; font-weight: bold; }
-        .result-lose { color: red; font-weight: bold; }
-        .result-wait { color: #1976d2; font-weight: bold; }
-    </style>
 </head>
 <body>
 <div class="container">
     <h2>Lịch sử cược</h2>
-    <div style="margin-bottom: 16px;"><b>Điểm hiện có:</b> <%= user.score %></div>
+    <div style="margin-bottom: 16px;"><b>Điểm hiện có:</b> <%= user.username === 'admin' ? '∞' : user.score %></div>
     <table>
         <thead>
             <tr>
@@ -30,10 +20,10 @@
         <tbody>
             <% bets.forEach(bet => { %>
                 <tr>
-                    <td><%= bet.match %></td>
-                    <td><%= bet.team %></td>
-                    <td><%= bet.amount %></td>
-                    <td>
+                    <td data-label="Trận đấu"><%= bet.match %></td>
+                    <td data-label="Đội đã cược"><%= bet.team %></td>
+                    <td data-label="Điểm cược"><%= bet.amount %></td>
+                    <td data-label="Kết quả">
                         <% if (bet.result === 'win') { %>
                             <span class="result-win">✔ Thắng</span>
                         <% } else if (bet.result === 'lose') { %>

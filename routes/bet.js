@@ -115,11 +115,33 @@ router.post('/', async (req, res) => {
     const existing = await Bet.findOne({ username: user.username, match });
     if (existing) return res.redirect('/bet?error=3');
 
-    await Bet.create({ username: user.username, match, team, amount: amt });
+    // Kiểm tra kết quả trận đấu
+    const matchObj = await Match.findOne({ name: match });
+    let betResult = null;
+    let reward = 0;
+    if (matchObj && matchObj.result) {
+        // Đã có kết quả, xác định luôn win/thua
+        betResult = (team === matchObj.result) ? 'win' : 'lose';
+        if (betResult === 'win') reward = amt * 2;
+    }
+
+    await Bet.create({ username: user.username, match, team, amount: amt, result: betResult });
+
     if (user.username !== 'admin') {
         user.score -= amt;
+        if (betResult === 'win') user.score += reward;
         await user.save();
     }
+
+    // Cập nhật lại tổng cược và tỉ lệ thắng cho user
+    const bets = await Bet.find({ username: user.username });
+    const totalBets = bets.length;
+    const winBets = bets.filter(b => b.result === 'win').length;
+    user.totalBets = totalBets;
+    user.winCount = winBets;
+    user.winRate = totalBets > 0 ? ((winBets / totalBets) * 100).toFixed(1) : '0.0';
+    await user.save();
+
     res.redirect('/bet?success=1');
 });
 
