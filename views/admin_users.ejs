@@ -1,49 +1,149 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Quản lý user</title>
-    <link rel="stylesheet" href="/style.css">
-</head>
-<body>
-<div class="container">
-    <h2>Quản lý user</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Username</th>
-                <th>Điểm</th>
-                <th>Hành động</th>
-            </tr>
-        </thead>
-        <tbody>
-        <% users.forEach(user => { %>
-            <tr>
-                <td><%= user.username %></td>
-                <td><%= user.score %></td>
-                <td>
-                    <% if (user.username !== 'admin') { %>
-                    <form method="POST" action="/admin/users/delete" style="display:inline">
-                        <input type="hidden" name="username" value="<%= user.username %>">
-                        <button type="submit" class="btn" onclick="return confirm('Xóa user này?')">Xóa</button>
-                    </form>
-                    <form method="POST" action="/admin/users/reset" style="display:inline">
-                        <input type="hidden" name="username" value="<%= user.username %>">
-                        <button type="submit" class="btn">Reset điểm</button>
-                    </form>
-                    <form method="POST" action="/admin/users/addpoint" style="display:inline">
-                        <input type="hidden" name="username" value="<%= user.username %>">
-                        <input type="number" name="amount" placeholder="+ điểm" style="width:70px" required>
-                        <button type="submit" class="btn">Add điểm</button>
-                    </form>
-                    <% } else { %>
-                        <span>Admin</span>
-                    <% } %>
-                </td>
-            </tr>
-        <% }) %>
-        </tbody>
-    </table>
-    <p><a class="btn return-home" href="/">Quay về trang chủ</a></p>
-</div>
-</body>
-</html> 
+// routes/admin.js
+const express = require('express');
+const router = express.Router();
+const Match = require('../models/Match');
+const Bet = require('../models/Bet');
+const User = require('../models/User');
+
+// Middleware kiểm tra admin
+function isAdmin(req, res, next) {
+    if (req.session.user && req.session.user.username === 'admin') return next();
+    return res.redirect('/login');
+}
+
+// GET: Hiển thị form tạo trận đấu mới
+router.get('/match', isAdmin, (req, res) => {
+    res.render('admin_create_match', { error: null, success: null });
+});
+
+// POST: Xử lý tạo trận đấu
+router.post('/match', isAdmin, async (req, res) => {
+    const { name, team1, team2 } = req.body;
+
+    if (!name || !team1 || !team2) {
+        return res.render('admin_create_match', {
+            error: 'Vui lòng nhập đầy đủ thông tin!',
+            success: null
+        });
+    }
+
+    try {
+        await Match.create({ name, teams: [team1, team2] });
+        res.render('admin_create_match', {
+            success: 'Tạo trận thành công!',
+            error: null
+        });
+    } catch (err) {
+        res.render('admin_create_match', {
+            error: 'Trận đấu đã tồn tại hoặc lỗi hệ thống!',
+            success: null
+        });
+    }
+});
+
+// GET: Nhập kết quả trận đấu
+router.get('/result', isAdmin, async (req, res) => {
+    try {
+        const matches = await Match.find();
+        const selectedMatch = req.query.match;
+
+        let teams = [];
+        let error = null;
+
+        if (selectedMatch) {
+            const match = await Match.findOne({ name: selectedMatch });
+            if (match) {
+                teams = match.teams;
+            } else {
+                error = '⚠️ Trận đấu không tồn tại!';
+            }
+        }
+
+        res.render('admin', {
+            matches: matches.map(m => m.name),
+            teams,
+            selectedMatch,
+            success: req.query.success,
+            error
+        });
+    } catch (err) {
+        console.error('Lỗi /admin/result:', err);
+        res.status(500).send('Lỗi hệ thống khi hiển thị kết quả.');
+    }
+});
+
+// POST: Ghi nhận đội thắng và xử lý kết quả
+router.post('/result', isAdmin, async (req, res) => {
+    const { match, winner } = req.body;
+
+    if (!match || !winner) return res.redirect('/admin/result?error=1');
+
+    try {
+        const bets = await Bet.find({ match });
+        for (const bet of bets) {
+            if (bet.team === winner) {
+                bet.result = 'win';
+                const user = await User.findOne({ username: bet.username });
+                if (user) {
+                    const reward = bet.amount * 2;
+                    user.score += reward;
+                    user.winCount = (user.winCount || 0) + 1;
+                    user.level = 1 + Math.floor(user.winCount / 3);
+                    await user.save();
+                }
+            } else {
+                bet.result = 'lose';
+            }
+            await bet.save();
+        }
+
+        res.redirect('/admin/result?success=1');
+    } catch (err) {
+        console.error('Lỗi khi ghi nhận kết quả:', err);
+        res.status(500).send('Lỗi khi cập nhật kết quả.');
+    }
+});
+
+// GET: Quản lý user
+router.get('/users', isAdmin, async (req, res) => {
+    try {
+        const users = await User.find().sort({ score: -1 });
+        res.render('admin_users', { users });
+    } catch (err) {
+        console.error('Lỗi khi hiển thị danh sách user:', err);
+        res.status(500).send('Lỗi khi hiển thị danh sách người dùng.');
+    }
+});
+
+// POST: Xoá user (trừ admin)
+router.post('/users/delete', isAdmin, async (req, res) => {
+    const { username } = req.body;
+    if (username !== 'admin') {
+        await User.deleteOne({ username });
+        await Bet.deleteMany({ username });
+    }
+    res.redirect('/admin/users');
+});
+
+// POST: Reset điểm
+router.post('/users/reset', isAdmin, async (req, res) => {
+    const { username } = req.body;
+    if (username !== 'admin') {
+        await User.updateOne({ username }, {
+            $set: { score: 1000, winCount: 0, level: 1, winRate: 0.0 }
+        });
+    }
+    res.redirect('/admin/users');
+});
+
+// POST: Cộng thêm điểm cho user
+router.post('/users/addpoint', isAdmin, async (req, res) => {
+    const { username, amount } = req.body;
+    const add = parseInt(amount);
+    if (username !== 'admin' && !isNaN(add)) {
+        await User.updateOne({ username }, { $inc: { score: add } });
+    }
+    res.redirect('/admin/users');
+});
+
+module.exports = router;

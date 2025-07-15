@@ -35,7 +35,20 @@
         <button type="submit" class="btn return-home">Đặt cược</button>
     </form>
 
-    <p><a class="btn return-home" href="/">Quay lại trang chủ</a></p>
+    <h3>Lịch sử cược</h3>
+    <% if (bets.length > 0) { %>
+        <ul>
+            <% bets.forEach(b => { %>
+                <li>
+                    Trận: <%= b.match %> | Đội: <%= b.team %> | Số điểm: <%= b.amount %> | Kết quả: <%= b.result || 'Chưa có' %>
+                </li>
+            <% }) %>
+        </ul>
+    <% } else { %>
+        <p>Chưa có cược nào.</p>
+    <% } %>
+
+    <p><a class="btn return-home" href="/">Quay lại</a></p>
 </div>
 </body>
 </html>
