@@ -13,7 +13,7 @@ router.get('/', async (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     const user = await User.findOne({ username: req.session.user.username });
     const userBets = await Bet.find({ username: user.username });
-    res.render('bet', { user, activeMatches, bets: userBets });
+    res.render('place_bet', { user, activeMatches, bets: userBets });
 });
 
 router.post('/', async (req, res) => {
