@@ -16,6 +16,14 @@ router.get('/', async (req, res) => {
     res.render('place_bet', { user, activeMatches, bets: userBets });
 });
 
+router.get('/account', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+
+    const user = await User.findOne({ username: req.session.user.username });
+    res.render('account', { user });
+});
+
+
 router.post('/', async (req, res) => {
     const { match, team, amount } = req.body;
     const user = await User.findOne({ username: req.session.user.username });
