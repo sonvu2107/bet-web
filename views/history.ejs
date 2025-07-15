@@ -7,6 +7,9 @@
 <body>
 <div class="container">
     <h2>Lịch sử cược</h2>
+    <% if (typeof isAdminView !== 'undefined' && isAdminView) { %>
+        <div style="margin-bottom: 10px;"><b>Xem lịch sử của user:</b> <%= user.username %></div>
+    <% } %>
     <div style="margin-bottom: 16px;"><b>Điểm hiện có:</b> <%= user.username === 'admin' ? '∞' : user.score %></div>
     <table>
         <thead>

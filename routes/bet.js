@@ -159,4 +159,13 @@ router.get('/dashboard', async (req, res) => {
     res.render('dashboard', { user, totalBets, winRate });
 });
 
+// Route cho admin xem lịch sử cược của user bất kỳ
+router.get('/admin/history/:username', async (req, res) => {
+    if (!req.session.user || req.session.user.username !== 'admin') return res.redirect('/login');
+    const user = await User.findOne({ username: req.params.username });
+    if (!user) return res.status(404).send('User không tồn tại');
+    const bets = await Bet.find({ username: user.username });
+    res.render('history', { user, bets, isAdminView: true });
+});
+
 module.exports = router;
