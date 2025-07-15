@@ -9,10 +9,9 @@
     <h2>Thông tin tài khoản</h2>
     <ul>
         <li><b>Tài khoản:</b> <%= user.username %></li>
-        <li><b>Điểm hiện có:</b> <%= user.score || 0 %></li>
-        <li><b>Level hiện tại:</b> <%= user.level || 1 %></li>
-        <li><b>Số trận thắng:</b> <%= user.winCount || 0 %></li>
-        <li><b>Tỉ lệ thắng:</b> <%= user.winRate || '0.0' %>%</li>
+        <li><b>Điểm hiện có:</b> <%= user.score %></li>
+        <li><b>Tổng số lần cược:</b> <%= totalBets %></li>
+        <li><b>Tỉ lệ thắng:</b> <%= winRate %>%</li>
     </ul>
 
     <h3>Thông tin cấp độ & mốc thưởng</h3>

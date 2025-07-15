@@ -17,12 +17,25 @@ router.get('/', async (req, res) => {
     const selectedMatch = activeMatches.find(m => m.name === selectedMatchName);
     const teams = selectedMatch ? selectedMatch.teams : [];
 
+    // --- Tính tỉ lệ thắng cho từng đội ---
+    let teamWinRates = {};
+    if (selectedMatch) {
+        const bets = await Bet.find({ match: selectedMatch.name });
+        teams.forEach(team => {
+            const total = bets.filter(b => b.team === team).length;
+            const win = bets.filter(b => b.team === team && b.result === 'win').length;
+            teamWinRates[team] = total > 0 ? win / total : 0;
+        });
+    }
+    // --------------------------------------
+
     res.render('place_bet', {
         user,
         activeMatches,
         bets: userBets,
         selectedMatchName,
-        teams
+        teams,
+        teamWinRates
     });
 });
 
@@ -37,6 +50,11 @@ router.get('/account', async (req, res) => {
     const user = await User.findOne({ username: req.session.user.username });
     if (!user) return res.redirect('/login');
 
+    const bets = await Bet.find({ username: user.username });
+    const totalBets = bets.length;
+    const winBets = bets.filter(b => b.result === 'win').length;
+    const winRate = totalBets > 0 ? ((winBets / totalBets) * 100).toFixed(1) : '0.0';
+
     const milestones = [
         { level: 1, require: 0, reward: 0 },
         { level: 2, require: 3, reward: 100 },
@@ -45,7 +63,7 @@ router.get('/account', async (req, res) => {
         { level: 5, require: 15, reward: 400 }
     ];
 
-    res.render('account', { user, milestones });
+    res.render('account', { user, milestones, totalBets, winRate });
 });
 
 // Lịch sử cược
@@ -61,7 +79,21 @@ router.get('/history', async (req, res) => {
 // Bảng xếp hạng
 router.get('/leaderboard', async (req, res) => {
     const users = await User.find().sort({ score: -1 }).limit(10);
-    res.render('leaderboard', { users });
+
+    // Tính tổng cược và tỉ lệ thắng cho từng user
+    const usersWithStats = await Promise.all(users.map(async user => {
+        const bets = await Bet.find({ username: user.username });
+        const totalBets = bets.length;
+        const winBets = bets.filter(b => b.result === 'win').length;
+        const winRate = totalBets > 0 ? ((winBets / totalBets) * 100).toFixed(1) : '0.0';
+        return {
+            ...user.toObject(),
+            totalBets,
+            winRate
+        };
+    }));
+
+    res.render('leaderboard', { users: usersWithStats });
 });
 
 // Xử lý đặt cược
@@ -74,16 +106,31 @@ router.post('/', async (req, res) => {
 
     const amt = parseInt(amount);
     if (!match || !team || isNaN(amt) || amt <= 0) return res.redirect('/bet?error=1');
-    if (user.score < amt) return res.redirect('/bet?error=2');
+    if (user.username !== 'admin' && user.score < amt) return res.redirect('/bet?error=2');
 
     const existing = await Bet.findOne({ username: user.username, match });
     if (existing) return res.redirect('/bet?error=3');
 
     await Bet.create({ username: user.username, match, team, amount: amt });
-    user.score -= amt;
-    await user.save();
-
+    if (user.username !== 'admin') {
+        user.score -= amt;
+        await user.save();
+    }
     res.redirect('/bet?success=1');
+});
+
+// Dashboard
+router.get('/dashboard', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+    const user = await User.findOne({ username: req.session.user.username });
+    if (!user) return res.redirect('/login');
+
+    const bets = await Bet.find({ username: user.username });
+    const totalBets = bets.length;
+    const winBets = bets.filter(b => b.result === 'win').length;
+    const winRate = totalBets > 0 ? ((winBets / totalBets) * 100).toFixed(1) : '0.0';
+
+    res.render('dashboard', { user, totalBets, winRate });
 });
 
 module.exports = router;

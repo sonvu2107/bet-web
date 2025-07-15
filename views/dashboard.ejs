@@ -10,31 +10,26 @@
     <div class="container">
         <h2>Welcome <%= user.username %>!</h2>
         <div class="alert alert-info">
-            <b>Tài khoản:</b>
-            <%= user.username %> |
-                <b>Điểm:</b>
-                <%= user.score %> |
-                    <b>Level:</b>
-                    <%= user.level || 1 %> |
-                        <b>Thắng:</b>
-                        <%= user.winCount || 0 %> |
-                            <b>Tỉ lệ thắng:</b>
-                            <%= user.winRate || '0.0' %>%
+            <b>Tài khoản:</b> <%= user.username %> |
+            <b>Điểm:</b> <%= user.username === 'admin' ? '∞' : user.score %> |
+            <b>Tổng cược:</b> <%= totalBets %> |
+            <b>Tỉ lệ thắng:</b> <%= winRate %>%
         </div>
-        <div class="btn-group">
-            <% if (user && user.username === 'admin') { %>
-                <a class="btn" href="/admin/match">+ Tạo trận đấu mới</a>
-                <a class="btn" href="/admin/users">Quản lý user</a>
+    </div>
+    <div class="btn-group">
+        <% if (user && user.username==='admin' ) { %>
+            <a class="btn" href="/admin/match">+ Tạo trận đấu mới</a>
+            <a class="btn" href="/admin/users">Quản lý user</a>
             <% } %>
-            <a class="btn" href="/bet/account">Thông tin tài khoản</a>
-            <a class="btn" href="/bet/place">Đặt cược</a>
-            <a class="btn" href="/bet/history">Lịch sử cược</a>
-            <a class="btn" href="/bet/leaderboard">Bảng xếp hạng</a>
-            <% if (user.username==='admin' ) { %>
-                <a class="btn" href="/admin/result">Nhập kết quả</a>
-            <% } %>
-            <a class="btn logout" href="/logout">Logout</a>
-        </div>
+                <a class="btn" href="/bet/account">Thông tin tài khoản</a>
+                <a class="btn" href="/bet/place">Đặt cược</a>
+                <a class="btn" href="/bet/history">Lịch sử cược</a>
+                <a class="btn" href="/bet/leaderboard">Bảng xếp hạng</a>
+                <% if (user.username==='admin' ) { %>
+                    <a class="btn" href="/admin/result">Nhập kết quả</a>
+                    <% } %>
+                        <a class="btn logout" href="/logout">Logout</a>
+    </div>
 
 </body>
 

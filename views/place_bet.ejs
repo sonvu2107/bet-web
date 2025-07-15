@@ -40,28 +40,6 @@
         <button type="submit" class="btn return-home">Đặt cược</button>
     </form>
 
-    <h3>Lịch sử cược</h3>
-    <% if (bets && bets.length > 0) { %>
-        <ul>
-            <% bets.forEach(b => { %>
-                <li>
-                    Trận: <%= b.match %> | Đội: <%= b.team %> |
-                    Số điểm: <%= b.amount %> |
-                    Kết quả:
-                    <% if (b.result === 'win') { %>
-                        ✅ Thắng
-                    <% } else if (b.result === 'lose') { %>
-                        ❌ Thua
-                    <% } else { %>
-                        ⏳ Đang chờ
-                    <% } %>
-                </li>
-            <% }) %>
-        </ul>
-    <% } else { %>
-        <p>Bạn chưa đặt cược trận nào.</p>
-    <% } %>
-
     <p><a class="btn return-home" href="/">Quay lại trang chủ</a></p>
 </div>
 </body>

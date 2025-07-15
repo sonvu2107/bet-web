@@ -10,23 +10,21 @@
     <table>
         <thead>
             <tr>
-                <th>Username</th>
+                <th>STT</th>
+                <th>Tài khoản</th>
                 <th>Điểm</th>
-                <th>Level</th>
-                <th>Thắng</th>
                 <th>Tổng cược</th>
                 <th>Tỉ lệ thắng</th>
             </tr>
         </thead>
         <tbody>
-            <% users.forEach(user => { %>
+            <% users.forEach((user, idx) => { %>
                 <tr>
+                    <td><%= idx + 1 %></td>
                     <td><%= user.username %></td>
                     <td><%= user.score %></td>
-                    <td><%= user.level || 1 %></td>
-                    <td><%= user.winCount || 0 %></td>
-                    <td><%= user.totalBets || 0 %></td>
-                    <td><%= user.winRate || '0.0' %>%</td>
+                    <td><%= user.totalBets %></td>
+                    <td><%= user.winRate %>%</td>
                 </tr>
             <% }) %>
         </tbody>
