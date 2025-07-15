@@ -35,7 +35,42 @@
         </tbody>
     </table>
 
+    <h3>Biểu đồ điểm theo thời gian</h3>
+    <canvas id="scoreChart" width="400" height="200"></canvas>
+
     <p><a class="btn return-home" href="/">Quay về trang chủ</a></p>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const history = <%- JSON.stringify(history || []) %>;
+  const labels = history.map(h => {
+    const d = new Date(h.time);
+    return d.toLocaleString();
+  });
+  const data = history.map(h => h.score);
+  const ctx = document.getElementById('scoreChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Điểm',
+        data: data,
+        borderColor: '#3f51b5',
+        backgroundColor: 'rgba(63,81,181,0.1)',
+        fill: true,
+        tension: 0.2
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { display: true, title: { display: true, text: 'Thời gian' } },
+        y: { display: true, title: { display: true, text: 'Điểm' } }
+      }
+    }
+  });
+</script>
 </body>
 </html>
