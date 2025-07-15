@@ -29,8 +29,12 @@ mongoose.connect(process.env.MONGO_URL, {
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
 app.get('/', (req, res) => {
-    res.redirect('/login');
+    if (!req.session.user) {
+        return res.redirect('/login');
+    }
+    res.render('dashboard', { user: req.session.user });
 });
+
 
 app.use('/', authRoutes);
 app.use('/bet', betRoutes);
