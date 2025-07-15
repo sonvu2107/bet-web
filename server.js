@@ -28,13 +28,16 @@ mongoose.connect(process.env.MONGO_URL, {
 }).then(() => console.log('✅ Đã kết nối MongoDB'))
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
     if (!req.session.user) {
         return res.redirect('/login');
     }
-    res.render('dashboard', { user: req.session.user });
-});
 
+    const user = await User.findOne({ username: req.session.user.username });
+    if (!user) return res.redirect('/login');
+
+    res.render('dashboard', { user });
+});
 
 app.use('/', authRoutes);
 app.use('/bet', betRoutes);
