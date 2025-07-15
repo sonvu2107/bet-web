@@ -65,24 +65,4 @@ router.get('/account', async (req, res) => {
     res.render('account', { user, history });
 });
 
-router.get('/place', async (req, res) => {
-    if (!req.session.user) return res.redirect('/login');
-    // Lấy danh sách trận đấu đang mở cược
-    // Ví dụ: lấy từ activeMatches hoặc từ DB nếu có
-    res.render('place_bet', { user: req.session.user /*, matches: activeMatches */ });
-});
-
-router.get('/history', async (req, res) => {
-    if (!req.session.user) return res.redirect('/login');
-    const bets = await Bet.find({ username: req.session.user.username });
-    res.render('history', { user: req.session.user, bets });
-});
-
-router.get('/leaderboard', async (req, res) => {
-    if (!req.session.user) return res.redirect('/login');
-    // Lấy top 10 user có điểm cao nhất
-    const users = await User.find().sort({ score: -1 }).limit(10);
-    res.render('leaderboard', { users });
-});
-
 module.exports = router;
