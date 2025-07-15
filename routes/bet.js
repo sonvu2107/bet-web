@@ -40,7 +40,11 @@ router.post('/', async (req, res) => {
 router.get('/dashboard', async (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     const user = await User.findOne({ username: req.session.user.username });
-    res.render('dashboard', { user });
+    const bets = await Bet.find({ username: user.username });
+    const totalBets = bets.length;
+    const winCount = bets.filter(b => b.result === 'win').length;
+    const winRate = totalBets > 0 ? ((winCount / totalBets) * 100).toFixed(1) : 0;
+    res.render('dashboard', { user, totalBets, winRate });
 });
 
 router.get('/account', async (req, res) => {
