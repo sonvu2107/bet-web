@@ -5,7 +5,8 @@
     <link rel="stylesheet" href="/style.css">
     <script>
         function onMatchChange(sel) {
-            window.location = '/bet/place?match=' + encodeURIComponent(sel.value);
+            const team = document.querySelector('select[name="team"]')?.value || '';
+            window.location = '/bet/place?match=' + encodeURIComponent(sel.value) + (team ? '&team=' + encodeURIComponent(team) : '');
         }
     </script>
 </head>
@@ -27,7 +28,12 @@
             <label>Chọn đội:</label>
             <select name="team" required>
                 <% teams.forEach(t => { %>
-                    <option value="<%= t %>"><%= t %></option>
+                    <option value="<%= t %>" <%= selectedTeam === t ? 'selected' : '' %>>
+                        <%= t %>
+                        <% if (teamWinRates && teamWinRates[t] !== undefined) { %>
+                            (Tỉ lệ thắng: <%= (teamWinRates[t] * 100).toFixed(1) %>%)
+                        <% } %>
+                    </option>
                 <% }) %>
             </select><br><br>
         <% } else { %>

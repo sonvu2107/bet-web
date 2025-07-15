@@ -16,6 +16,7 @@ router.get('/', async (req, res) => {
     const selectedMatchName = req.query.match || (activeMatches[0] && activeMatches[0].name);
     const selectedMatch = activeMatches.find(m => m.name === selectedMatchName);
     const teams = selectedMatch ? selectedMatch.teams : [];
+    const selectedTeam = req.query.team || (teams[0] || '');
 
     // --- Tính tỉ lệ thắng cho từng đội ---
     let teamWinRates = {};
@@ -35,7 +36,8 @@ router.get('/', async (req, res) => {
         bets: userBets,
         selectedMatchName,
         teams,
-        teamWinRates
+        teamWinRates,
+        selectedTeam
     });
 });
 
