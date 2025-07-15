@@ -3,65 +3,83 @@ const router = express.Router();
 const Bet = require('../models/Bet');
 const User = require('../models/User');
 
-// Fake trận đấu hiện tại (có thể sửa lại thành lấy từ DB sau)
+// Fake danh sách trận đấu (bạn có thể thay bằng lấy từ DB sau này)
 const activeMatches = [
     { name: 'Match 1', teams: ['Team A', 'Team B'] },
     { name: 'Match 2', teams: ['Team C', 'Team D'] }
 ];
 
+// Trang mặc định /bet (hiển thị giao diện đặt cược)
 router.get('/', async (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     const user = await User.findOne({ username: req.session.user.username });
+    if (!user) return res.redirect('/login');
+
     const userBets = await Bet.find({ username: user.username });
     res.render('place_bet', { user, activeMatches, bets: userBets });
 });
 
+// Thông tin tài khoản
 router.get('/account', async (req, res) => {
     if (!req.session.user) return res.redirect('/login');
-
     const user = await User.findOne({ username: req.session.user.username });
+    if (!user) return res.redirect('/login');
+
     res.render('account', { user });
 });
 
+// Trang đặt cược (cũng có thể dùng /bet thay cho route này)
 router.get('/place', async (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     const user = await User.findOne({ username: req.session.user.username });
+    if (!user) return res.redirect('/login');
+
     const userBets = await Bet.find({ username: user.username });
     res.render('place_bet', { user, activeMatches, bets: userBets });
 });
 
+// Lịch sử cược
 router.get('/history', async (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     const user = await User.findOne({ username: req.session.user.username });
-    const userBets = await Bet.find({ username: user.username });
-    res.render('history', { user, bets: userBets });
+    if (!user) return res.redirect('/login');
+
+    const bets = await Bet.find({ username: user.username });
+    res.render('history', { user, bets });
 });
 
+// Bảng xếp hạng
 router.get('/leaderboard', async (req, res) => {
-    if (!req.session.user) return res.redirect('/login');
-    const topUsers = await User.find().sort({ score: -1 }).limit(10);
-    res.render('leaderboard', { users: topUsers });
+    const users = await User.find().sort({ score: -1 }).limit(10);
+    res.render('leaderboard', { users });
 });
 
-
+// Xử lý đặt cược
 router.post('/', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+
     const { match, team, amount } = req.body;
     const user = await User.findOne({ username: req.session.user.username });
+    if (!user) return res.redirect('/login');
+
     const amt = parseInt(amount);
 
     if (!match || !team || isNaN(amt) || amt <= 0) {
-        return res.redirect('/bet?error=1');
+        return res.redirect('/bet?error=1'); // Dữ liệu đầu vào không hợp lệ
     }
 
-    if (user.score < amt) return res.redirect('/bet?error=2');
+    if (user.score < amt) return res.redirect('/bet?error=2'); // Không đủ tiền
 
     const existing = await Bet.findOne({ username: user.username, match });
-    if (existing) return res.redirect('/bet?error=3');
+    if (existing) return res.redirect('/bet?error=3'); // Đã cược trận này rồi
 
+    // Tạo và lưu cược mới
     const newBet = new Bet({ username: user.username, match, team, amount: amt });
     await newBet.save();
+
     user.score -= amt;
     await user.save();
+
     res.redirect('/bet?success=1');
 });
 
