@@ -1,12 +1,14 @@
+require('dotenv').config();
 const express = require('express');
+const mongoose = require('mongoose');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const path = require('path');
 const app = express();
 
 const authRoutes = require('./routes/auth');
-const bet = require('./routes/bet');
-const adminRouter = require('./routes/admin');
+const betRoutes = require('./routes/bet');
+const adminRoutes = require('./routes/admin');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -19,16 +21,22 @@ app.use(session({
     saveUninitialized: true
 }));
 
-// ✅ Thêm route gốc chuyển về login
+// Kết nối MongoDB
+mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}).then(() => console.log('✅ Đã kết nối MongoDB'))
+  .catch(err => console.error('❌ MongoDB connection error:', err));
+
 app.get('/', (req, res) => {
     res.redirect('/login');
 });
 
-// Routes
 app.use('/', authRoutes);
-app.use('/bet', bet.router);
-app.use('/admin', adminRouter);
+app.use('/bet', betRoutes);
+app.use('/admin', adminRoutes);
 
-app.listen(3000, () => {
-    console.log('Server running on http://localhost:3000');
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
 });

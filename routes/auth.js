@@ -1,35 +1,35 @@
 const express = require('express');
 const router = express.Router();
-const { users } = require('./bet');
+const User = require('../models/User');
 
 router.get('/login', (req, res) => {
-    res.render('login');
+    res.render('login', { error: null });
 });
 
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
     const { username, password } = req.body;
-    const user = users.find(u => u.username === username && u.password === password);
-    if (user) {
-        req.session.user = { username: user.username };
-        res.redirect('/bet');
-    } else {
-        res.render('login', { error: 'Sai tên đăng nhập hoặc mật khẩu!' });
-    }
+    const user = await User.findOne({ username, password });
+    if (!user) return res.render('login', { error: 'Sai thông tin đăng nhập!' });
+    req.session.user = user;
+    res.redirect('/');
 });
 
 router.get('/register', (req, res) => {
-    res.render('register');
+    res.render('register', { error: null });
 });
 
-router.post('/register', (req, res) => {
-    // Thêm user mới với 1000 điểm, level 1, winCount 0 và lưu password
-    users.push({ username: req.body.username, password: req.body.password, score: 1000, level: 1, winCount: 0 });
-    res.redirect('/login');
+router.post('/register', async (req, res) => {
+    const { username, password } = req.body;
+    const existing = await User.findOne({ username });
+    if (existing) return res.render('register', { error: 'Tên đã tồn tại!' });
+    const newUser = new User({ username, password, score: 1000 });
+    await newUser.save();
+    req.session.user = newUser;
+    res.redirect('/');
 });
 
 router.get('/logout', (req, res) => {
-    req.session.destroy();
-    res.redirect('/login');
+    req.session.destroy(() => res.redirect('/login'));
 });
 
 module.exports = router;

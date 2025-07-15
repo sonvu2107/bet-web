@@ -1,22 +1,30 @@
 const express = require('express');
 const router = express.Router();
-const { bets, users, calcLevelAndReward, activeMatches } = require('./bet'); // Import dữ liệu cược và user từ bet.js
+const Bet = require('../models/Bet');
+const User = require('../models/User');
 
-// Middleware kiểm tra admin
+// Tạm lưu trận đấu ở server (nếu muốn có thể lưu DB sau)
+let activeMatches = [
+    { name: 'Match 1', teams: ['Team A', 'Team B'] },
+    { name: 'Match 2', teams: ['Team C', 'Team D'] }
+];
+
 function isAdmin(req, res, next) {
     if (req.session.user && req.session.user.username === 'admin') return next();
     return res.status(403).send('Bạn không có quyền truy cập!');
+}
+
+function calcLevelAndReward(user) {
+    user.level = 1 + Math.floor(user.winCount / 3);
 }
 
 router.get('/', (req, res) => {
     res.send('Admin Panel - Coming soon!');
 });
 
-// Trang nhập kết quả cho admin
-router.get('/result', (req, res) => {
-    // Lấy danh sách trận đấu đã có người cược
+router.get('/result', async (req, res) => {
+    const bets = await Bet.find();
     const matches = [...new Set(bets.map(b => b.match))];
-    // Nếu có query match, chỉ lấy các đội đã cược cho trận đó
     let teams = [];
     if (req.query.match) {
         teams = [...new Set(bets.filter(b => b.match === req.query.match).map(b => b.team))];
@@ -24,43 +32,42 @@ router.get('/result', (req, res) => {
     res.render('admin', { matches, teams, selectedMatch: req.query.match, success: req.query.success });
 });
 
-// Xử lý nhập kết quả
-router.post('/result', (req, res) => {
+router.post('/result', async (req, res) => {
     const { match, winner } = req.body;
-    // Đánh dấu kết quả cho các cược liên quan
-    bets.forEach(bet => {
-        if (bet.match === match) {
-            bet.result = (bet.team === winner) ? 'win' : 'lose';
-        }
-    });
-    // Tính toán thưởng/phạt cho từng user
-    bets.filter(bet => bet.match === match).forEach(bet => {
-        const user = users.find(u => u.username === bet.username);
-        if (!user) return;
+    const matchBets = await Bet.find({ match });
+
+    for (const bet of matchBets) {
+        bet.result = (bet.team === winner) ? 'win' : 'lose';
+        await bet.save();
+        const user = await User.findOne({ username: bet.username });
+        if (!user) continue;
         if (bet.result === 'win') {
-            user.score += bet.amount; // Thưởng gấp đôi (đã trừ khi đặt cược)
-        } else if (bet.result === 'lose') {
-            user.score -= bet.amount; // Trừ số tiền đã cược
+            user.score += bet.amount * 2;
+        } else {
+            user.score -= bet.amount;
         }
-    });
-    // Cập nhật winCount và level cho từng user
-    users.forEach(user => {
-        user.winCount = bets.filter(b => b.username === user.username && b.result === 'win').length;
+        await user.save();
+    }
+
+    const allUsers = await User.find();
+    for (const user of allUsers) {
+        const winCount = await Bet.countDocuments({ username: user.username, result: 'win' });
+        user.winCount = winCount;
         calcLevelAndReward(user);
-    });
+        await user.save();
+    }
+
     res.redirect('/admin/result?success=1');
 });
 
-// Hiển thị danh sách các trận đấu đang có cược
-router.get('/matches', (req, res) => {
-    // Gom nhóm các trận đấu và các đội đã cược
+router.get('/matches', async (req, res) => {
+    const bets = await Bet.find();
     const matchMap = {};
     bets.forEach(bet => {
         if (!matchMap[bet.match]) matchMap[bet.match] = {};
         if (!matchMap[bet.match][bet.team]) matchMap[bet.match][bet.team] = 0;
         matchMap[bet.match][bet.team]++;
     });
-    // Chuyển thành mảng để render
     const matches = Object.entries(matchMap).map(([match, teamsObj]) => ({
         match,
         teams: Object.entries(teamsObj).map(([team, count]) => ({ team, count }))
@@ -68,12 +75,10 @@ router.get('/matches', (req, res) => {
     res.render('matches', { matches });
 });
 
-// Hiển thị form tạo trận đấu mới
 router.get('/match', isAdmin, (req, res) => {
     res.render('admin_create_match', { error: null, success: null });
 });
 
-// Xử lý tạo trận đấu mới
 router.post('/match', isAdmin, (req, res) => {
     const { name, team1, team2 } = req.body;
     if (!name || !team1 || !team2) {
@@ -83,30 +88,36 @@ router.post('/match', isAdmin, (req, res) => {
     res.render('admin_create_match', { success: 'Đã thêm trận đấu mới!' });
 });
 
-// Quản lý user - chỉ admin
-router.get('/users', isAdmin, (req, res) => {
+router.get('/users', isAdmin, async (req, res) => {
+    const users = await User.find();
     res.render('admin_users', { users });
 });
 
-router.post('/users/delete', isAdmin, (req, res) => {
+router.post('/users/delete', isAdmin, async (req, res) => {
     const { username } = req.body;
     if (username === 'admin') return res.status(400).send('Không thể xóa admin!');
-    const idx = users.findIndex(u => u.username === username);
-    if (idx !== -1) users.splice(idx, 1);
+    await User.deleteOne({ username });
+    await Bet.deleteMany({ username });
     res.redirect('/admin/users');
 });
 
-router.post('/users/reset', isAdmin, (req, res) => {
+router.post('/users/reset', isAdmin, async (req, res) => {
     const { username } = req.body;
-    const user = users.find(u => u.username === username);
-    if (user) user.score = 1000;
+    const user = await User.findOne({ username });
+    if (user) {
+        user.score = 1000;
+        await user.save();
+    }
     res.redirect('/admin/users');
 });
 
-router.post('/users/addpoint', isAdmin, (req, res) => {
+router.post('/users/addpoint', isAdmin, async (req, res) => {
     const { username, amount } = req.body;
-    const user = users.find(u => u.username === username);
-    if (user && !isNaN(parseInt(amount))) user.score += parseInt(amount);
+    const user = await User.findOne({ username });
+    if (user && !isNaN(parseInt(amount))) {
+        user.score += parseInt(amount);
+        await user.save();
+    }
     res.redirect('/admin/users');
 });
 
