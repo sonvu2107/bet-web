@@ -27,15 +27,8 @@ app.use(session({
 mongoose.connect(process.env.MONGO_URL).then(() => console.log('✅ Đã kết nối MongoDB'))
     .catch(err => console.error('❌ MongoDB connection error:', err));
 
-app.get('/', async (req, res) => {
-    if (!req.session.user) {
-        return res.redirect('/login');
-    }
-
-    const user = await User.findOne({ username: req.session.user.username });
-    if (!user) return res.redirect('/login');
-
-    res.render('dashboard', { user });
+app.get('/', (req, res) => {
+    res.redirect('/bet/dashboard');
 });
 
 app.use('/', authRoutes);
