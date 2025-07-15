@@ -1,31 +1,38 @@
 <!DOCTYPE html>
 <html>
-<head><title>Bảng xếp hạng</title><link rel="stylesheet" href="/style.css"></head>
-<body><div class="container">
-<h2>Bảng xếp hạng</h2>
-<table>
-    <thead>
-        <tr>
-            <th>Hạng</th>
-            <th>Người chơi</th>
-            <th>Điểm</th>
-            <th>Thắng</th>
-            <th>Tổng cược</th>
-            <th>Tỉ lệ thắng (%)</th>
-        </tr>
-    </thead>
-    <tbody>
-    <% users.forEach((user, idx) => { %>
-        <tr>
-            <td><%= idx + 1 %></td>
-            <td><%= user.username %></td>
-            <td><%= user.score %></td>
-            <td><%= user.winCount %></td>
-            <td><%= user.total %></td>
-            <td><%= user.winRate %></td>
-        </tr>
-    <% }) %>
-    </tbody>
-</table>
-<p><a class="btn return-home" href="/">Quay về trang chủ</a></p>
-</div></body></html>
+<head>
+    <title>Bảng xếp hạng</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="container">
+    <h2>Bảng xếp hạng</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Điểm</th>
+                <th>Level</th>
+                <th>Thắng</th>
+                <th>Tổng cược</th>
+                <th>Tỉ lệ thắng</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% users.forEach(user => { %>
+                <tr>
+                    <td><%= user.username %></td>
+                    <td><%= user.score %></td>
+                    <td><%= user.level || 1 %></td>
+                    <td><%= user.winCount || 0 %></td>
+                    <td><%= user.totalBets || 0 %></td>
+                    <td><%= user.winRate || '0.0' %>%</td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+
+    <p><a class="btn return-home" href="/">Quay về trang chủ</a></p>
+</div>
+</body>
+</html>

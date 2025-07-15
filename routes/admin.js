@@ -81,19 +81,28 @@ router.post('/result', isAdmin, async (req, res) => {
     try {
         const bets = await Bet.find({ match });
         for (const bet of bets) {
-            if (bet.team === winner) {
-                bet.result = 'win';
-                const user = await User.findOne({ username: bet.username });
-                if (user) {
-                    const reward = bet.amount * 2;
-                    user.score += reward;
-                    user.winCount = (user.winCount || 0) + 1;
-                    user.level = 1 + Math.floor(user.winCount / 3);
-                    await user.save();
-                }
-            } else {
-                bet.result = 'lose';
+            const user = await User.findOne({ username: bet.username });
+            if (!user) continue;
+
+            const isWin = bet.team === winner;
+            bet.result = isWin ? 'win' : 'lose';
+
+            // Tổng số lần cược
+            user.totalBets = (user.totalBets || 0) + 1;
+
+            // Nếu thắng, cộng thưởng và số trận thắng
+            if (isWin) {
+                const reward = bet.amount * 2;
+                user.score += reward;
+                user.winCount = (user.winCount || 0) + 1;
             }
+
+            // Cập nhật level và winRate
+            user.level = 1 + Math.floor((user.winCount || 0) / 3);
+            const total = user.totalBets || 1;
+            user.winRate = ((user.winCount || 0) / total * 100).toFixed(1);
+
+            await user.save();
             await bet.save();
         }
 

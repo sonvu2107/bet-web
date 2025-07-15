@@ -13,9 +13,20 @@ router.get('/', async (req, res) => {
     const activeMatches = await Match.find();
     const userBets = await Bet.find({ username: user.username });
 
-    res.render('place_bet', { user, activeMatches, bets: userBets });
+    const selectedMatchName = req.query.match || (activeMatches[0] && activeMatches[0].name);
+    const selectedMatch = activeMatches.find(m => m.name === selectedMatchName);
+    const teams = selectedMatch ? selectedMatch.teams : [];
+
+    res.render('place_bet', {
+        user,
+        activeMatches,
+        bets: userBets,
+        selectedMatchName,
+        teams
+    });
 });
 
+// Chuyển hướng từ /place sang /
 router.get('/place', async (req, res) => {
     return res.redirect('/bet');
 });
