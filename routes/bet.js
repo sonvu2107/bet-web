@@ -23,6 +23,26 @@ router.get('/account', async (req, res) => {
     res.render('account', { user });
 });
 
+router.get('/place', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+    const user = await User.findOne({ username: req.session.user.username });
+    const userBets = await Bet.find({ username: user.username });
+    res.render('place_bet', { user, activeMatches, bets: userBets });
+});
+
+router.get('/history', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+    const user = await User.findOne({ username: req.session.user.username });
+    const userBets = await Bet.find({ username: user.username });
+    res.render('history', { user, bets: userBets });
+});
+
+router.get('/leaderboard', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+    const topUsers = await User.find().sort({ score: -1 }).limit(10);
+    res.render('leaderboard', { users: topUsers });
+});
+
 
 router.post('/', async (req, res) => {
     const { match, team, amount } = req.body;
