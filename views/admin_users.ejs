@@ -22,20 +22,22 @@
                 <td><%= user.score %></td>
                 <td>
                     <% if (user.username !== 'admin') { %>
-                    <form method="POST" action="/admin/users/delete" style="display:inline">
-                        <input type="hidden" name="username" value="<%= user.username %>">
-                        <button type="submit" class="btn" onclick="return confirm('Xóa user này?')">Xóa</button>
-                    </form>
-                    <form method="POST" action="/admin/users/reset" style="display:inline">
-                        <input type="hidden" name="username" value="<%= user.username %>">
-                        <button type="submit" class="btn">Reset điểm</button>
-                    </form>
-                    <form method="POST" action="/admin/users/addpoint" style="display:inline">
-                        <input type="hidden" name="username" value="<%= user.username %>">
-                        <input type="number" name="amount" placeholder="+ điểm" style="width:70px" required>
-                        <button type="submit" class="btn">Add điểm</button>
-                    </form>
-                    <a class="btn" href="/bet/admin/history/<%= user.username %>">Xem lịch sử cược</a>
+                    <div class="action-group">
+                        <form method="POST" action="/admin/users/delete" style="display:inline">
+                            <input type="hidden" name="username" value="<%= user.username %>">
+                            <button type="submit" class="btn" onclick="return confirm('Xóa user này?')">Xóa</button>
+                        </form>
+                        <form method="POST" action="/admin/users/reset" style="display:inline">
+                            <input type="hidden" name="username" value="<%= user.username %>">
+                            <button type="submit" class="btn">Reset điểm</button>
+                        </form>
+                        <form method="POST" action="/admin/users/addpoint" style="display:inline">
+                            <input type="hidden" name="username" value="<%= user.username %>">
+                            <input type="number" name="amount" placeholder="+ điểm" style="width:70px" required>
+                            <button type="submit" class="btn">Add điểm</button>
+                        </form>
+                        <a class="btn" href="/bet/admin/history/<%= user.username %>">Xem lịch sử cược</a>
+                    </div>
                     <% } else { %>
                         <span>Admin</span>
                     <% } %>

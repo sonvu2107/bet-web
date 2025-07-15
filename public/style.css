@@ -299,3 +299,15 @@
   align-items: center;
   width: 100%;
 }
+
+.action-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-start;
+}
+.action-group form,
+.action-group a,
+.action-group span {
+    margin: 0 !important;
+}
