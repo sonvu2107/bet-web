@@ -11,6 +11,12 @@ function isAdmin(req, res, next) {
     return res.redirect('/login');
 }
 
+// GET: Hiển thị danh sách người dùng
+router.get('/users', isAdmin, async (req, res) => {
+    const users = await User.find().sort({ score: -1 });
+    res.render('admin_users', { users });
+});
+
 // GET: Hiển thị form tạo trận đấu mới
 router.get('/match', isAdmin, (req, res) => {
     res.render('admin_create_match', { error: null, success: null });
@@ -112,5 +118,44 @@ router.post('/result', isAdmin, async (req, res) => {
         res.status(500).send('Lỗi khi cập nhật kết quả.');
     }
 });
+
+// POST: Xóa user
+router.post('/users/delete', isAdmin, async (req, res) => {
+    const { username } = req.body;
+    if (username && username !== 'admin') {
+        await User.deleteOne({ username });
+        await Bet.deleteMany({ username });
+    }
+    res.redirect('/admin/users');
+});
+
+// POST: Reset điểm
+router.post('/users/reset', isAdmin, async (req, res) => {
+    const { username } = req.body;
+    const user = await User.findOne({ username });
+    if (user && username !== 'admin') {
+        user.score = 1000;
+        user.winCount = 0;
+        user.totalBets = 0;
+        user.winRate = '0.0';
+        user.level = 1;
+        await user.save();
+        await Bet.deleteMany({ username });
+    }
+    res.redirect('/admin/users');
+});
+
+// POST: Cộng điểm
+router.post('/users/addpoint', isAdmin, async (req, res) => {
+    const { username, amount } = req.body;
+    const user = await User.findOne({ username });
+    const amt = parseInt(amount);
+    if (user && username !== 'admin' && !isNaN(amt)) {
+        user.score += amt;
+        await user.save();
+    }
+    res.redirect('/admin/users');
+});
+
 
 module.exports = router;
