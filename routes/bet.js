@@ -37,6 +37,12 @@ router.post('/', async (req, res) => {
     res.redirect('/bet?success=1');
 });
 
+router.get('/dashboard', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+    const user = await User.findOne({ username: req.session.user.username });
+    res.render('dashboard', { user });
+});
+
 router.get('/account', async (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     const user = await User.findOne({ username: req.session.user.username });
