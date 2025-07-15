@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Thông tin tài khoản</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="container">
+    <h2>Thông tin tài khoản</h2>
+    <ul>
+        <li><b>Tài khoản:</b> <%= user.username %></li>
+        <li><b>Điểm hiện có:</b> <%= user.score || 0 %></li>
+        <li><b>Level hiện tại:</b> <%= user.level || 1 %></li>
+        <li><b>Số trận thắng:</b> <%= user.winCount || 0 %></li>
+        <li><b>Tỉ lệ thắng:</b> <%= user.winRate || '0.0' %>%</li>
+    </ul>
+
+    <h3>Thông tin cấp độ & mốc thưởng</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Level</th>
+                <th>Số trận thắng cần</th>
+                <th>Thưởng khi đạt</th>
+            </tr>
+        </thead>
+        <tbody>
+        <% milestones.forEach(m => { %>
+            <tr <% if ((user.level || 1) === m.level) { %> style="font-weight:bold; color:#007bff" <% } %> >
+                <td><%= m.level %></td>
+                <td><%= m.require %></td>
+                <td>+<%= m.reward %> điểm</td>
+            </tr>
+        <% }) %>
+        </tbody>
+    </table>
+
+    <p><a class="btn return-home" href="/bet">Quay về trang chủ</a></p>
+</div>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nhập kết quả trận đấu</title>
+    <link rel="stylesheet" href="/style.css">
+    <script>
+    function onMatchChange(sel) {
+        window.location = '/admin/result?match=' + encodeURIComponent(sel.value);
+    }
+    </script>
+</head>
+<body>
+<div class="container">
+    <h2>Nhập kết quả trận đấu</h2>
+    <% if (typeof matches !== 'undefined' && matches.length > 0) { %>
+    <form method="POST" action="/admin/result">
+        <label>Chọn trận đấu:</label>
+        <select name="match" required onchange="onMatchChange(this)">
+            <option value="">-- Chọn trận đấu --</option>
+            <% matches.forEach(m => { %>
+                <option value="<%= m %>" <%= selectedMatch === m ? 'selected' : '' %>><%= m %></option>
+            <% }) %>
+        </select><br><br>
+        <% if (selectedMatch && teams.length > 0) { %>
+        <label>Chọn đội thắng:</label>
+        <select name="winner" required>
+            <% teams.forEach(t => { %>
+                <option value="<%= t %>"><%= t %></option>
+            <% }) %>
+        </select><br><br>
+        <button type="submit" class="btn return-home">Xác nhận kết quả</button>
+        <% } %>
+    </form>
+    <% if (typeof success !== 'undefined') { %>
+        <div class="alert alert-success">Đã lưu kết quả!</div>
+    <% } %>
+    <% } else { %>
+        <div class="alert alert-info">Chưa có trận đấu nào để nhập kết quả.</div>
+    <% } %>
+    <p><a class="btn return-home" href="/bet">Quay về trang chủ</a></p>
+</div>
+</body>
+</html> 

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quản lý user</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="container">
+    <h2>Quản lý user</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Điểm</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+        <% users.forEach(user => { %>
+            <tr>
+                <td><%= user.username %></td>
+                <td><%= user.score %></td>
+                <td>
+                    <% if (user.username !== 'admin') { %>
+                    <form method="POST" action="/admin/users/delete" style="display:inline">
+                        <input type="hidden" name="username" value="<%= user.username %>">
+                        <button type="submit" class="btn" onclick="return confirm('Xóa user này?')">Xóa</button>
+                    </form>
+                    <form method="POST" action="/admin/users/reset" style="display:inline">
+                        <input type="hidden" name="username" value="<%= user.username %>">
+                        <button type="submit" class="btn">Reset điểm</button>
+                    </form>
+                    <form method="POST" action="/admin/users/addpoint" style="display:inline">
+                        <input type="hidden" name="username" value="<%= user.username %>">
+                        <input type="number" name="amount" placeholder="+ điểm" style="width:70px" required>
+                        <button type="submit" class="btn">Add điểm</button>
+                    </form>
+                    <% } else { %>
+                        <span>Admin</span>
+                    <% } %>
+                </td>
+            </tr>
+        <% }) %>
+        </tbody>
+    </table>
+    <p><a class="btn return-home" href="/bet">Quay về trang chủ</a></p>
+</div>
+</body>
+</html> 

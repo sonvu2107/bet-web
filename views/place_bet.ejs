@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Đặt cược</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Đặt cược</h2>
+
+        <form method="POST" action="/bet/place/select">
+            <label>Chọn trận đấu:</label>
+            <select name="match" required onchange="this.form.submit()">
+                <option value="">-- Chọn trận đấu --</option>
+                <% matches.forEach(m => { %>
+                    <option value="<%= m %>" <%= selectedMatch === m ? 'selected' : '' %>><%= m %></option>
+                <% }) %>
+            </select>
+        </form>
+
+        <% if (selectedMatch && teams.length > 0) { %>
+            <form method="POST" action="/bet/place_bet">
+                <input type="hidden" name="match" value="<%= selectedMatch %>">
+
+                <label>Chọn đội thắng:</label>
+                <select name="winner" required>
+                    <% teams.forEach(t => { %>
+                        <option value="<%= t %>"><%= t %></option>
+                    <% }) %>
+                </select>
+
+                <label>Nhập số điểm muốn cược:</label>
+                <input type="number" name="amount" min="1" required placeholder="VD: 100">
+
+                <br><br>
+                <button type="submit" class="btn return-home">Xác nhận đặt cược</button>
+            </form>
+        <% } %>
+
+        <p><a class="btn return-home" href="/bet">Quay về trang chủ</a></p>
+    </div>
+</body>
+</html>

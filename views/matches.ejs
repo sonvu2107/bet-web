@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Các trận đấu đang có cược</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="container">
+    <h2>Các trận đấu đang có cược</h2>
+    <% if (matches.length === 0) { %>
+        <div class="alert alert-info">Chưa có trận đấu nào được cược.</div>
+    <% } else { %>
+        <table>
+            <thead>
+                <tr>
+                    <th>Trận đấu</th>
+                    <th>Đội đã cược</th>
+                    <th>Số lượt cược</th>
+                </tr>
+            </thead>
+            <tbody>
+            <% matches.forEach(m => { %>
+                <% m.teams.forEach((t, idx) => { %>
+                <tr>
+                    <% if (idx === 0) { %>
+                        <td rowspan="<%= m.teams.length %>"><%= m.match %></td>
+                    <% } %>
+                    <td><%= t.team %></td>
+                    <td><%= t.count %></td>
+                </tr>
+                <% }) %>
+            <% }) %>
+            </tbody>
+        </table>
+    <% } %>
+    <p><a class="btn return-home" href="/bet">Quay về trang chủ</a></p>
+</div>
+</body>
+</html> 

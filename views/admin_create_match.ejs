@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tạo trận đấu mới</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="container">
+    <h2>Tạo trận đấu mới</h2>
+    <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-error"><%= error %></div>
+    <% } %>
+    <% if (typeof success !== 'undefined' && success) { %>
+        <div class="alert alert-success"><%= success %></div>
+    <% } %>
+    <form method="POST" action="/admin/match">
+        <label>Tên trận đấu:</label><br>
+        <input type="text" name="name" required><br><br>
+        <label>Tên đội 1:</label><br>
+        <input type="text" name="team1" required><br><br>
+        <label>Tên đội 2:</label><br>
+        <input type="text" name="team2" required><br><br>
+        <div class="centered">
+          <button type="submit" class="btn return-home">Tạo trận</button>
+        </div>
+    </form>
+    <p><a class="btn return-home" href="/bet">Quay về trang chủ</a></p>
+</div>
+</body>
+</html> 

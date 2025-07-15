@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lịch sử cược</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Lịch sử cược</h2>
+
+        <p><b>Điểm hiện có:</b> <%= user.score || 0 %></p>
+
+        <% if (bets.length === 0) { %>
+            <p>Bạn chưa đặt cược trận nào.</p>
+        <% } else { %>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Trận đấu</th>
+                        <th>Đội đã cược</th>
+                        <th>Điểm cược</th>
+                        <th>Kết quả</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% bets.forEach(bet => { %>
+                        <tr>
+                            <td><%= bet.match %></td>
+                            <td><%= bet.team %></td>
+                            <td><%= bet.amount %></td>
+                            <td>
+                                <% if (bet.result === 'win') { %>
+                                    <span class="alert alert-success">✅ Thắng</span>
+                                <% } else if (bet.result === 'lose') { %>
+                                    <span class="alert alert-error">❌ Thua</span>
+                                <% } else { %>
+                                    <span class="alert alert-info">Chờ kết quả</span>
+                                <% } %>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        <% } %>
+
+        <p style="text-align:center; margin-top: 20px;">
+            <a class="btn return-home" href="/bet">Quay về trang chủ</a>
+        </p>
+    </div>
+</body>
+</html>
