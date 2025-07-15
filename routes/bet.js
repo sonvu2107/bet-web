@@ -67,7 +67,16 @@ router.get('/account', async (req, res) => {
         { level: 5, require: 15, reward: 400 }
     ];
 
-    res.render('account', { user, milestones, totalBets, winRate });
+    // Tính level dựa trên tổng số trận thắng
+    let level = 1;
+    for (let i = milestones.length - 1; i >= 0; i--) {
+        if (winBets >= milestones[i].require) {
+            level = milestones[i].level;
+            break;
+        }
+    }
+
+    res.render('account', { user, milestones, totalBets, winRate, level });
 });
 
 // Lịch sử cược
