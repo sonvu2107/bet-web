@@ -37,7 +37,9 @@ router.get('/', async (req, res) => {
         selectedMatchName,
         teams,
         teamWinRates,
-        selectedTeam
+        selectedTeam,
+        success: req.query.success,
+        error: req.query.error
     });
 });
 

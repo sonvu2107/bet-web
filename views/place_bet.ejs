@@ -13,6 +13,18 @@
 <div class="container">
     <h2>Đặt cược</h2>
 
+    <% if (typeof success !== 'undefined') { %>
+        <div class="alert alert-success">Đặt cược thành công!</div>
+    <% } %>
+    <% if (typeof error !== 'undefined') { %>
+        <div class="alert alert-error">
+            <% if (error == 1) { %> Dữ liệu không hợp lệ!
+            <% } else if (error == 2) { %> Bạn không đủ điểm!
+            <% } else if (error == 3) { %> Bạn đã đặt cược trận này!
+            <% } else { %> Có lỗi xảy ra! <% } %>
+        </div>
+    <% } %>
+
     <form method="POST" action="/bet">
         <label>Chọn trận đấu:</label>
         <select name="match" required onchange="onMatchChange(this)">

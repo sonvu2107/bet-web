@@ -15,22 +15,21 @@
             <b>Tổng cược:</b> <%= totalBets %> |
             <b>Tỉ lệ thắng:</b> <%= winRate %>%
         </div>
-    </div>
-    <div class="btn-group">
-        <% if (user && user.username==='admin' ) { %>
-            <a class="btn" href="/admin/match">+ Tạo trận đấu mới</a>
-            <a class="btn" href="/admin/users">Quản lý user</a>
+        <div class="btn-group">
+            <% if (user && user.username === 'admin') { %>
+                <a class="btn" href="/admin/match">+ Tạo trận đấu mới</a>
+                <a class="btn" href="/admin/users">Quản lý user</a>
             <% } %>
-                <a class="btn" href="/bet/account">Thông tin tài khoản</a>
-                <a class="btn" href="/bet/place">Đặt cược</a>
-                <a class="btn" href="/bet/history">Lịch sử cược</a>
-                <a class="btn" href="/bet/leaderboard">Bảng xếp hạng</a>
-                <% if (user.username==='admin' ) { %>
-                    <a class="btn" href="/admin/result">Nhập kết quả</a>
-                    <% } %>
-                        <a class="btn logout" href="/logout">Logout</a>
+            <a class="btn" href="/bet/account">Thông tin tài khoản</a>
+            <a class="btn" href="/bet/place">Đặt cược</a>
+            <a class="btn" href="/bet/history">Lịch sử cược</a>
+            <a class="btn" href="/bet/leaderboard">Bảng xếp hạng</a>
+            <% if (user && user.username === 'admin') { %>
+                <a class="btn" href="/admin/result">Nhập kết quả</a>
+            <% } %>
+            <a class="btn logout" href="/logout">Logout</a>
+        </div>
     </div>
-
 </body>
 
 </html>
