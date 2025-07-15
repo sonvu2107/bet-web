@@ -5,8 +5,7 @@
     <link rel="stylesheet" href="/style.css">
     <script>
         function onMatchChange(sel) {
-            const team = document.querySelector('select[name="team"]')?.value || '';
-            window.location = '/bet/place?match=' + encodeURIComponent(sel.value) + (team ? '&team=' + encodeURIComponent(team) : '');
+            window.location = '/bet?match=' + encodeURIComponent(sel.value);
         }
     </script>
 </head>

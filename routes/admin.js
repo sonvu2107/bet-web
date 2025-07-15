@@ -157,5 +157,4 @@ router.post('/users/addpoint', isAdmin, async (req, res) => {
     res.redirect('/admin/users');
 });
 
-
 module.exports = router;
