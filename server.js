@@ -34,6 +34,7 @@ app.get('/', (req, res) => {
 app.use('/', authRoutes);
 app.use('/bet', betRoutes);
 app.use('/admin', adminRoutes);
+app.use('/api/chat', require('./routes/chat'));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

@@ -1,0 +1,50 @@
+<div id="chat-container" style="margin-top: 20px;">
+    <h3>💬 Chat cộng đồng</h3>
+    <div id="chat-box"
+         style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 8px; background: #f9f9f9;">
+    </div>
+    <input type="text" id="chat-input" placeholder="Nhập tin nhắn..." style="width: 80%;" />
+    <button onclick="sendMessage()">Gửi</button>
+  </div>
+  
+  <script>
+    async function loadMessages() {
+      try {
+        const res = await fetch('/api/chat');
+        const data = await res.json();
+        const box = document.getElementById('chat-box');
+        box.innerHTML = '';
+        data.forEach(msg => {
+          const time = new Date(msg.timestamp).toLocaleTimeString();
+          const div = document.createElement('div');
+          div.innerHTML = `<strong>${msg.username}</strong> <span style="color:gray;">[${time}]</span>: ${msg.message}`;
+          box.appendChild(div);
+        });
+        box.scrollTop = box.scrollHeight;
+      } catch (err) {
+        console.error("Lỗi tải tin nhắn:", err);
+      }
+    }
+  
+    async function sendMessage() {
+      const input = document.getElementById('chat-input');
+      const msg = input.value.trim();
+      if (!msg) return;
+      try {
+        await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: msg })
+        });
+        input.value = '';
+        loadMessages();
+      } catch (err) {
+        alert("Lỗi gửi tin nhắn");
+      }
+    }
+  
+    // Tải lại tin nhắn mỗi 3 giây
+    setInterval(loadMessages, 3000);
+    loadMessages(); // Gọi lần đầu
+  </script>
+  
