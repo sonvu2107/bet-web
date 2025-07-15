@@ -3,45 +3,39 @@
 <head>
     <title>Đặt cược</title>
     <link rel="stylesheet" href="/style.css">
+    <script>
+        function onMatchChange(sel) {
+            window.location = '/bet/place?match=' + encodeURIComponent(sel.value);
+        }
+    </script>
 </head>
 <body>
-    <div class="container">
-        <h2>Đặt cược</h2>
-        <p>Xin chào <%= user.username %> | Điểm: <%= user.score %></p>
+<div class="container">
+    <h2>Đặt cược</h2>
+    <form method="POST" action="/bet">
+        <label>Chọn trận đấu:</label>
+        <select name="match" required onchange="onMatchChange(this)">
+            <% activeMatches.forEach(m => { %>
+                <option value="<%= m.name %>" <%= selectedMatchName === m.name ? 'selected' : '' %>><%= m.name %></option>
+            <% }) %>
+        </select><br><br>
 
-        <form method="POST" action="/bet">
-            <label>Chọn trận đấu:</label>
-            <select name="match" required>
-                <% activeMatches.forEach(m => { %>
-                    <option value="<%= m.name %>"><%= m.name %></option>
-                <% }) %>
-            </select><br/>
-
-            <label>Chọn đội cược:</label>
+        <% if (teams && teams.length > 0) { %>
+            <label>Chọn đội:</label>
             <select name="team" required>
-                <% activeMatches[0].teams.forEach(t => { %>
+                <% teams.forEach(t => { %>
                     <option value="<%= t %>"><%= t %></option>
                 <% }) %>
-            </select><br/>
-
-            <label>Số điểm cược:</label>
-            <input type="number" name="amount" min="1" required><br/><br/>
-
-            <button type="submit">Đặt cược</button>
-        </form>
-
-        <% if (bets.length > 0) { %>
-            <h3>Lịch sử cược</h3>
-            <ul>
-                <% bets.forEach(b => { %>
-                    <li>
-                        Trận: <%= b.match %> | Đội: <%= b.team %> | Số điểm: <%= b.amount %> | Kết quả: <%= b.result || 'Chưa có' %>
-                    </li>
-                <% }) %>
-            </ul>
+            </select><br><br>
         <% } %>
 
-        <p><a href="/">Quay lại trang chủ</a></p>
-    </div>
+        <label>Số điểm đặt cược:</label>
+        <input type="number" name="amount" min="1" required><br><br>
+
+        <button type="submit" class="btn return-home">Đặt cược</button>
+    </form>
+
+    <p><a class="btn return-home" href="/">Quay lại trang chủ</a></p>
+</div>
 </body>
 </html>
