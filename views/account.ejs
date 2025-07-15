@@ -26,7 +26,7 @@
         </thead>
         <tbody>
         <% milestones.forEach(m => { %>
-            <tr <% if ((user.level || 1) === m.level) { %> style="font-weight:bold; color:#007bff" <% } %> >
+            <tr <% if ((user.level || 1) === m.level) { %> style="font-weight:bold; color:#007bff" <% } %>>
                 <td><%= m.level %></td>
                 <td><%= m.require %></td>
                 <td>+<%= m.reward %> điểm</td>

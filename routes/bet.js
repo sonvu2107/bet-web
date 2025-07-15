@@ -25,8 +25,15 @@ router.get('/account', async (req, res) => {
     const user = await User.findOne({ username: req.session.user.username });
     if (!user) return res.redirect('/login');
 
-    res.render('account', { user });
-});
+    const milestones = [
+        { level: 1, require: 0, reward: 0 },
+        { level: 2, require: 3, reward: 100 },
+        { level: 3, require: 6, reward: 150 },
+        { level: 4, require: 10, reward: 250 },
+        { level: 5, require: 15, reward: 400 }
+    ];
+
+    res.render('account', { user, milestones }); // 
 
 // Trang đặt cược (cũng có thể dùng /bet thay cho route này)
 router.get('/place', async (req, res) => {
