@@ -490,6 +490,18 @@ async function checkWinAndNextTurn(room, playerId) {
           if (user) allScore[p.username] = user.score;
         }
       }
+      // Lưu lịch sử ván Tiến lên
+      const TienLenGame = require('./models/TienLenGame');
+      await TienLenGame.create({
+        players: allPlayers.map(p => p.username),
+        winner: winner.username,
+        losers: losers.map(l => l.username),
+        bet,
+        scoreChanges: {
+          [winner.username]: bet * losers.length,
+          ...Object.fromEntries(losers.map(l => [l.username, -bet]))
+        }
+      });
       io.to(room).emit('scoreChanged', allScore);
       return;
     }
