@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bàn chơi Tiến lên</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="tienlen.css">
+</head>
+<body>
+  <div class="top-btn-group">
+    <a href="/bet/dashboard" class="btn return-home">← Về trang chủ</a>
+    <button id="leave-room-btn" class="btn">Rời phòng</button>
+  </div>
+  <div id="bet-select-container" style="text-align:center; margin: 16px 0; display:none;">
+    <label for="bet-amount-select">Chọn mức cược: </label>
+    <select id="bet-amount-select">
+      <option value="50">50</option>
+      <option value="100">100</option>
+      <option value="150">150</option>
+    </select>
+    <input type="number" id="bet-amount-input" min="1" placeholder="Hoặc nhập mức khác" style="width:100px; margin-left:8px;">
+    <button id="confirm-bet-btn">Xác nhận</button>
+  </div>
+  <div id="bet-info" style="text-align:center; margin: 8px 0;"></div>
+  <div class="table">
+    <div class="player top">
+      <div class="name">Người chơi 1</div>
+      <div class="cards">
+        <!-- 13 lá bài ẩn -->
+        <div class="card">🂠</div> <div class="card">🂠</div> <div class="card">🂠</div> <div class="card">🂠</div>
+        <div class="card">🂠</div> <div class="card">🂠</div> <div class="card">🂠</div> <div class="card">🂠</div>
+        <div class="card">🂠</div> <div class="card">🂠</div> <div class="card">🂠</div> <div class="card">🂠</div>
+        <div class="card">🂠</div>
+      </div>
+    </div>
+
+    <div class="player left">
+      <div class="name">Người chơi 2</div>
+      <div class="cards">
+        <!-- 13 lá bài ẩn -->
+        <div class="card">🂠</div> <div class="card">🂠</div> <div class="card">🂠</div> <div class="card">🂠</div>
+        <div class="card">🂠</div> <div class="card">🂠</div> <div class="card">🂠</div> <div class="card">🂠</div>
+        <div class="card">🂠</div> <div class="card">🂠</div> <div class="card">🂠</div> <div class="card">🂠</div>
+        <div class="card">🂠</div>
+      </div>
+    </div>
+
+    <div class="center">
+      <div class="cards" id="table-cards">
+        <!-- Bài đang đánh giữa bàn -->
+        <!-- XÓA các lá bài mẫu ở đây, để trống -->
+      </div>
+    </div>
+
+    <div class="player right">
+      <div class="name">Người chơi 3</div>
+      <div class="cards">
+        <!-- 13 lá bài ẩn -->
+        <div class="card">🂠</div> <div class="card">🂠</div> <div class="card">🂠</div> <div class="card">🂠</div>
+        <div class="card">🂠</div> <div class="card">🂠</div> <div class="card">🂠</div> <div class="card">🂠</div>
+        <div class="card">🂠</div> <div class="card">🂠</div> <div class="card">🂠</div> <div class="card">🂠</div>
+        <div class="card">🂠</div>
+      </div>
+    </div>
+
+    <div class="player bottom">
+      <div class="name">Bạn</div>
+      <div class="cards" id="my-cards">
+        <!-- 13 lá bài thật -->
+        <div class="card">3♠</div><div class="card">4♠</div><div class="card">5♠</div><div class="card">6♠</div>
+        <div class="card">7♠</div><div class="card">8♠</div><div class="card">9♠</div><div class="card">10♠</div>
+        <div class="card">J♠</div><div class="card">Q♠</div><div class="card">K♠</div><div class="card">A♠</div>
+        <div class="card">2♠</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-actions">
+    <button class="btn" onclick="playSelected()">Đánh</button>
+    <button class="btn" onclick="passTurn()">Bỏ lượt</button>
+    <button class="btn">Sắp bài</button>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="tienlen.js"></script>
+</body>
+</html>
