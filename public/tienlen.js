@@ -14,6 +14,9 @@ let myIndex = 0;
 let betAmount = 50;
 let isRoomOwner = false;
 let playerUsernames = [];
+// Thêm biến lưu userId và gameId
+let currentUserId = null;
+let currentGameId = null;
 
 // Lấy username và điểm từ server, hiển thị lên giao diện, gửi tên khi join game
 fetch('/get-username')
@@ -21,6 +24,7 @@ fetch('/get-username')
   .then(data => {
     myUsername = data.username;
     myScore = data.score ?? 0;
+    currentUserId = data._id || null; // Nếu API trả về _id
     showUserInfo();
     socket.emit('joinTienLen', myUsername);
   });
@@ -36,6 +40,42 @@ function showUserInfo() {
     document.body.prepend(infoDiv);
   }
   infoDiv.textContent = `Tên: ${myUsername} | Điểm: ${typeof myScore === 'number' ? myScore : 0}`;
+}
+
+// Lắng nghe sự kiện tạo ván thành công để lưu lại gameId
+socket.on('tao-vong-thanh-cong', (game) => {
+  currentGameId = game._id;
+  // Có thể cập nhật UI nếu muốn
+});
+
+// Hàm kiểm tra thắng và gửi sự kiện kết thúc ván đấu
+function kiemTraThang() {
+  // Giả sử nguoiChoi là mảng các object { id, ten, quanBai }
+  for (let i = 0; i < nguoiChoi.length; i++) {
+    if (nguoiChoi[i].quanBai.length === 0) {
+      const winner = nguoiChoi[i];
+      alert(winner.ten + " đã thắng!");
+      const loserIds = nguoiChoi.filter(p => p.id !== winner.id).map(p => p.id);
+      // Gửi sự kiện lên server
+      socket.emit('ket-thuc-van-dau', {
+        winnerId: winner.id,
+        loserIds: loserIds,
+        gameId: currentGameId
+      });
+      return true;
+    }
+  }
+  return false;
+}
+
+// Thêm nút tạo ván mới (giả sử có nút với id btnTaoVongMoi)
+if (document.getElementById('btnTaoVongMoi')) {
+  document.getElementById('btnTaoVongMoi').addEventListener('click', () => {
+    socket.emit('tao-vong-moi', {
+      userId: currentUserId,
+      username: myUsername
+    });
+  });
 }
 
 // Hàm xử lý bài

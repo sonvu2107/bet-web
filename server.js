@@ -52,7 +52,11 @@ app.use('/bet', express.static('public'));
 app.get('/get-username', async (req, res) => {
   if (!req.session?.user?.username) return res.json({ username: 'Ẩn danh', score: 0 });
   const user = await User.findOne({ username: req.session.user.username });
-  res.json({ username: user.username, score: user.score ?? 0 });
+  res.json({
+    username: user.username,
+    score: user.score ?? 0,
+    _id: user._id // Thêm dòng này để client lấy được userId
+  });
 });
 
 // Quản lý các phòng chờ
@@ -142,6 +146,54 @@ function getHandType(cards) {
 }
 
 io.on('connection', (socket) => {
+  // --- TẠO VÁN GAME MỚI (nếu muốn tạo collection thủ công, không ảnh hưởng logic Tiến lên hiện tại) ---
+  socket.on('tao-vong-moi', async (playerData) => {
+    try {
+      // playerData: { userId, username }
+      const newGame = new TienLenGame({
+        players: [playerData.userId],
+        winner: '',
+        losers: [],
+        bet: 0,
+        scoreChanges: {},
+      });
+      const savedGame = await newGame.save();
+      console.log('Đã tạo ván game mới:', savedGame._id);
+      socket.join(savedGame._id.toString());
+      socket.emit('tao-vong-thanh-cong', savedGame);
+    } catch (err) {
+      console.error('Lỗi khi tạo ván game:', err);
+    }
+  });
+
+  // --- LẮNG NGHE KẾT THÚC VÁN ĐẤU (nếu muốn cập nhật điểm thủ công, không ảnh hưởng logic Tiến lên hiện tại) ---
+  socket.on('ket-thuc-van-dau', async ({ winnerId, loserIds, gameId }) => {
+    const diemCongTru = 10;
+    try {
+      // Cộng điểm cho người thắng
+      const winner = await User.findByIdAndUpdate(
+        winnerId,
+        { $inc: { score: diemCongTru } },
+        { new: true }
+      );
+      // Trừ điểm cho người thua
+      await User.updateMany(
+        { _id: { $in: loserIds } },
+        { $inc: { score: -diemCongTru } }
+      );
+      // Lưu lịch sử ván đấu nếu có gameId
+      if (gameId) {
+        await TienLenGame.findByIdAndUpdate(
+          gameId,
+          { winner: winnerId, losers: loserIds, bet: diemCongTru, playedAt: new Date() }
+        );
+      }
+      // Gửi thông báo về client nếu muốn
+      // io.to(gameId).emit('cap-nhat-diem', { winner, loserIds });
+    } catch (err) {
+      console.error('Lỗi cập nhật điểm:', err);
+    }
+  });
   console.log('A user connected:', socket.id);
   // Ở đây sẽ xử lý logic phòng, chia bài, v.v.
 
@@ -433,6 +485,39 @@ function getHandsCount(game) {
   return result;
 }
 
+// Hàm lưu lịch sử ván Tiến lên
+const TienLenGame = require('./models/TienLenGame');
+async function saveTienLenGame(allPlayers, winner, losers, bet) {
+  try {
+    console.log('DEBUG saveTienLenGame:', {
+      allPlayers,
+      winner,
+      losers,
+      bet,
+      players: allPlayers.map(p => p.username),
+      winnerName: winner.username,
+      losersName: losers.map(l => l.username),
+      scoreChanges: {
+        [winner.username]: bet * losers.length,
+        ...Object.fromEntries(losers.map(l => [l.username, -bet]))
+      }
+    });
+    await TienLenGame.create({
+      players: allPlayers.map(p => p.username),
+      winner: winner.username,
+      losers: losers.map(l => l.username),
+      bet,
+      scoreChanges: {
+        [winner.username]: bet * losers.length,
+        ...Object.fromEntries(losers.map(l => [l.username, -bet]))
+      }
+    });
+    console.log(`[Tiến lên] Đã lưu lịch sử ván: winner=${winner.username}`);
+  } catch (err) {
+    console.error('Lỗi khi lưu lịch sử ván Tiến lên:', err);
+  }
+}
+
 // Kiểm tra thắng cuộc và chuyển lượt
 async function checkWinAndNextTurn(room, playerId) {
   const game = gameRooms[room];
@@ -461,10 +546,8 @@ async function checkWinAndNextTurn(room, playerId) {
       const winner = allPlayers.find(p => p.pid === winnerPid);
       const losers = allPlayers.filter(p => p.pid !== winnerPid);
       if (winner && winner.username) {
-        await User.updateOne(
-          { username: winner.username },
-          { $inc: { score: bet * losers.length } }
-        );
+        console.log('Sắp lưu lịch sử ván, winner:', winner, 'losers:', losers, 'bet:', bet);
+        await saveTienLenGame(allPlayers, winner, losers, bet);
         const user = await User.findOne({ username: winner.username });
         const winnerSocket = io.sockets.sockets.get(winnerPid);
         if (winnerSocket && user) winnerSocket.emit('updateScore', user.score);
@@ -490,18 +573,8 @@ async function checkWinAndNextTurn(room, playerId) {
           if (user) allScore[p.username] = user.score;
         }
       }
-      // Lưu lịch sử ván Tiến lên
-      const TienLenGame = require('./models/TienLenGame');
-      await TienLenGame.create({
-        players: allPlayers.map(p => p.username),
-        winner: winner.username,
-        losers: losers.map(l => l.username),
-        bet,
-        scoreChanges: {
-          [winner.username]: bet * losers.length,
-          ...Object.fromEntries(losers.map(l => [l.username, -bet]))
-        }
-      });
+      // Lưu lịch sử ván Tiến lên bằng hàm riêng
+      await saveTienLenGame(allPlayers, winner, losers, bet);
       io.to(room).emit('scoreChanged', allScore);
       return;
     }
