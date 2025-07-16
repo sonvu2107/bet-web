@@ -1,4 +1,3 @@
-const socket = io(); // Socket.IO client
 let currentUser = '';
 let nickname = '';
 let onlineUsers = [];
